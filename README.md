@@ -40,6 +40,11 @@ overall_score: 1.0
 
 The candidate run intentionally regresses. It demonstrates how the harness flags prompt-injection leakage, unsafe tool calls, retrieval drift, and cost/latency budget failures.
 
+Sample output:
+
+- [`docs/examples/core-scorecard.md`](docs/examples/core-scorecard.md)
+- [`docs/examples/agentic-security-scorecard.md`](docs/examples/agentic-security-scorecard.md)
+
 ## Example Domains
 
 The included examples are public-safe synthetic tasks:
