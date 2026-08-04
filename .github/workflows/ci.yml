@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install package
+        run: python -m pip install -e .[dev]
+      - name: Lint
+        run: ruff check .
+      - name: Test
+        run: pytest
+      - name: Harness gate
+        run: |
+          multiclaw-harness \
+            --golden examples/golden_cases.jsonl \
+            --run examples/baseline_run.jsonl \
+            --compare-run examples/candidate_run.jsonl \
+            --json-out reports/ci-scorecard.json \
+            --md-out reports/ci-scorecard.md \
+            --allow-regressions
+      - name: Agentic security pack gate
+        run: |
+          multiclaw-harness \
+            --golden packs/agentic-security/golden_cases.jsonl \
+            --run packs/agentic-security/baseline_run.jsonl \
+            --compare-run packs/agentic-security/candidate_run.jsonl \
+            --json-out reports/agentic-security-ci-scorecard.json \
+            --md-out reports/agentic-security-ci-scorecard.md \
+            --allow-regressions

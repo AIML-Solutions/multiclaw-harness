@@ -1,0 +1,22 @@
+[project]
+name = "multiclaw-harness"
+version = "0.1.0"
+description = "Regression harness for agentic AI workflow trajectories"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "AIML Solutions", email = "dennis.donaghy@aiml-solutions.com" }]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.5"]
+
+[project.scripts]
+multiclaw-harness = "multiclaw_harness.cli:main"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
