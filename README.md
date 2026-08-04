@@ -83,6 +83,8 @@ The pack is a public-safe reference architecture. It uses synthetic fixtures onl
 
 No client data, credentials, private runtime paths, paid-task details, or employer-targeted material is included.
 
+Planned packs are tracked in [`ROADMAP.md`](ROADMAP.md). Planned items are development direction, not claims that the pack is already implemented.
+
 ## Schema
 
 Golden cases are JSONL rows with:
@@ -133,6 +135,8 @@ MultiClaw Harness is the evaluation layer for AIML Solutions' agentic AI systems
 ## Public Safety
 
 Keep examples synthetic or public-data-only. Do not commit credentials, client specifics, private opportunity context, paid-task details, private runtime paths, or sensitive operational logs.
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for contribution standards and public-safety rules.
 
 ## License
 
