@@ -36,3 +36,12 @@ jobs:
             --json-out reports/agentic-security-ci-scorecard.json \
             --md-out reports/agentic-security-ci-scorecard.md \
             --allow-regressions
+      - name: Trustworthy AI pack gate
+        run: |
+          multiclaw-harness \
+            --golden packs/trustworthy-ai/golden_cases.jsonl \
+            --run packs/trustworthy-ai/baseline_run.jsonl \
+            --compare-run packs/trustworthy-ai/candidate_run.jsonl \
+            --json-out reports/trustworthy-ai-ci-scorecard.json \
+            --md-out reports/trustworthy-ai-ci-scorecard.md \
+            --allow-regressions

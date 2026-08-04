@@ -83,6 +83,24 @@ The pack is a public-safe reference architecture. It uses synthetic fixtures onl
 
 No client data, credentials, private runtime paths, paid-task details, or employer-targeted material is included.
 
+### Trustworthy AI
+
+`packs/trustworthy-ai` contains synthetic decision-support fixtures for calibration, explanation faithfulness, drift detection, human override, stale-data warnings, and model-card/release documentation gates.
+
+Run it with:
+
+```bash
+python -m multiclaw_harness.cli \
+  --golden packs/trustworthy-ai/golden_cases.jsonl \
+  --run packs/trustworthy-ai/baseline_run.jsonl \
+  --compare-run packs/trustworthy-ai/candidate_run.jsonl \
+  --json-out reports/trustworthy-ai-scorecard.json \
+  --md-out reports/trustworthy-ai-scorecard.md \
+  --allow-regressions
+```
+
+The pack is synthetic and public-safe. It demonstrates an evaluation pattern for decision-support trust gates; it does not claim certification, ATO readiness, or compliance approval.
+
 Planned packs are tracked in [`ROADMAP.md`](ROADMAP.md). Planned items are development direction, not claims that the pack is already implemented.
 
 ## Schema

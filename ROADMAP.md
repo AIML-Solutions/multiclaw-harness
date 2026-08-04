@@ -33,6 +33,8 @@ Status: implemented with synthetic fixtures.
 
 ### Trustworthy AI Pack
 
+Status: implemented with synthetic fixtures.
+
 Goal: evaluate decision-support workflows for calibration, explanation quality, drift, override handling, and auditability.
 
 Candidate cases:
