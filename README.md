@@ -145,10 +145,8 @@ Recommended gate conditions:
 
 MultiClaw Harness is the evaluation layer for AIML Solutions' agentic AI systems work. It complements:
 
-- `AgentTools` for CLI skills and harness-audit artifacts
-- `RecallOps` for retrieval/provenance infrastructure
-- `AssureOps` for claims/evidence/monitor review
-- `MultiClaw` for operating-model governance
+- [triage-mesh](https://github.com/AIML-Solutions/triage-mesh) — a security-first multi-agent system (MCP + A2A) whose CI applies the same philosophy this harness encodes: agent behavior guarded by tests, including a 12-scenario red-team suite that must fail closed
+- [RecallOps](https://github.com/AIML-Solutions/recallops) — retrieval/provenance infrastructure for the RAG workflows these harnesses evaluate
 
 ## Public Safety
 
