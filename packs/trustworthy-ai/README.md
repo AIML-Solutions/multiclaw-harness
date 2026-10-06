@@ -22,16 +22,10 @@ Use this pack to demonstrate the evaluation pattern, not to claim production app
 ## Run
 
 ```bash
-python -m multiclaw_harness.cli \
-  --golden packs/trustworthy-ai/golden_cases.jsonl \
-  --run packs/trustworthy-ai/baseline_run.jsonl \
-  --compare-run packs/trustworthy-ai/candidate_run.jsonl \
-  --json-out reports/trustworthy-ai-scorecard.json \
-  --md-out reports/trustworthy-ai-scorecard.md \
-  --allow-regressions
+multiclaw-harness --pack packs/trustworthy-ai
 ```
 
-The baseline should pass all cases. The candidate run intentionally fails all cases so the regression behavior is obvious.
+The baseline passes every case. The candidate run intentionally fails every case so the regression behavior is obvious: the gate fails (exit code `1`) and lists each regression. Add `--md-out reports/trustworthy-ai-scorecard.md` to save a scorecard; a current sample is in [`docs/examples`](../../docs/examples/trustworthy-ai-scorecard.md).
 
 ## Intended Interpretation
 

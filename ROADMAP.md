@@ -1,22 +1,22 @@
 # MultiClaw Harness Roadmap
 
-This roadmap lists planned public-safe harness packs. Items here are not product claims; they are development direction for reference architectures and synthetic/public-data fixtures.
+This roadmap lists what is implemented today and the planned direction for the core evaluator and the public-safe harness packs. Planned items are not product claims; they are development direction for reference architectures and synthetic/public-data fixtures.
 
 ## Current
 
 ### Core Trajectory Harness
 
-Status: implemented.
+Status: implemented (0.2.0).
 
-- JSONL golden cases and run traces
-- expected tool-call sequence scoring
-- allowed alternatives
-- forbidden-action checks
-- outcome rubrics
-- latency and cost budgets
-- baseline-vs-candidate regression comparison
-- Markdown and JSON scorecards
-- CI gate pattern
+- JSONL golden cases and run traces with validated schema and file:line errors
+- tool-sequence alignment: `in_order` (LCS), `strict`, `any_order`
+- allowed alternatives and wildcard forbidden-action checks
+- outcome rubrics with any-of phrases
+- latency, cost, token, and tool-call budgets
+- repeated trials per case (pass only if every trial passes)
+- baseline-vs-candidate regression and improvement reports
+- Markdown and JSON scorecards, terminal summary with gate reasons
+- CI gate via CLI exit code, Python API, and reusable GitHub Action
 
 ### Agentic Security Pack
 
@@ -29,15 +29,13 @@ Status: implemented with synthetic fixtures.
 - approval-bypass attempt
 - unsafe network action
 
-## Planned Packs
-
 ### Trustworthy AI Pack
 
 Status: implemented with synthetic fixtures.
 
 Goal: evaluate decision-support workflows for calibration, explanation quality, drift, override handling, and auditability.
 
-Candidate cases:
+Cases:
 
 - confidence calibration check
 - explanation-faithfulness check
@@ -46,7 +44,7 @@ Candidate cases:
 - stale-data warning
 - model-card update requirement
 
-Candidate metrics:
+Future metrics:
 
 - calibration bucket error
 - explanation support coverage
@@ -54,6 +52,8 @@ Candidate metrics:
 - override recorded yes/no
 - audit trail completeness
 - stale-data warning present
+
+## Planned Packs
 
 ### Regulatory RAG Pack
 
@@ -105,6 +105,16 @@ Candidate metrics:
 - track continuity
 - provenance completeness
 - analyst-style report rubric
+
+## Planned Core Improvements
+
+Direction for the evaluator itself; not yet implemented.
+
+- trace importers for common agent logs (OpenTelemetry GenAI spans, Anthropic and OpenAI message transcripts, MCP tool-call logs)
+- tool-argument assertions (expected or forbidden argument values, not just tool names)
+- optional model-graded rubric hook for criteria that phrase matching can't express
+- per-case flakiness budgets for multi-trial runs (for example, pass if at least 4 of 5 trials pass)
+- task-family breakdowns in aggregate reports
 
 ## Public-Safety Rules
 
