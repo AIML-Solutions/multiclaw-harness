@@ -1,22 +1,59 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
 [project]
 name = "multiclaw-harness"
-version = "0.1.0"
-description = "Regression harness for agentic AI workflow trajectories"
+dynamic = ["version"]
+description = "Regression harness and CI gate for agentic AI workflow trajectories"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "AIML Solutions", email = "dennis.donaghy@aiml-solutions.com" }]
+keywords = ["agents", "llm", "evaluation", "regression-testing", "ci", "tool-use", "ai-safety"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Software Development :: Testing",
+  "Typing :: Typed",
+]
 dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "ruff>=0.5"]
+dev = ["pytest>=8.0", "ruff>=0.6"]
+
+[project.urls]
+Homepage = "https://github.com/AIML-Solutions/multiclaw-harness"
+Changelog = "https://github.com/AIML-Solutions/multiclaw-harness/blob/main/CHANGELOG.md"
+Issues = "https://github.com/AIML-Solutions/multiclaw-harness/issues"
 
 [project.scripts]
 multiclaw-harness = "multiclaw_harness.cli:main"
+
+[tool.hatch.version]
+path = "src/multiclaw_harness/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/multiclaw_harness"]
 
 [tool.ruff]
 line-length = 120
 target-version = "py310"
 
+[tool.ruff.lint]
+# Explicit selection keeps lint results stable across ruff releases.
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF", "ISC"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["src"]
