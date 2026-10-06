@@ -2,46 +2,79 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
+    name: test (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
       - name: Install package
-        run: python -m pip install -e .[dev]
+        run: python -m pip install -e '.[dev]'
       - name: Lint
         run: ruff check .
+      - name: Format
+        run: ruff format --check .
       - name: Test
         run: pytest
-      - name: Harness gate
+
+  harness-gate:
+    # Exercises the repository's own GitHub Action: each baseline must pass the gate,
+    # and each intentionally unsafe candidate must be blocked.
+    name: gate (${{ matrix.pack }})
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        pack: [examples, packs/agentic-security, packs/trustworthy-ai]
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Baseline passes the gate
+        uses: ./
+        with:
+          golden: ${{ matrix.pack }}/golden_cases.jsonl
+          run: ${{ matrix.pack }}/baseline_run.jsonl
+          json-out: reports/baseline.json
+          md-out: reports/baseline.md
+
+      - name: Gate evaluates the unsafe candidate
+        id: candidate
+        uses: ./
+        with:
+          pack: ${{ matrix.pack }}
+          json-out: reports/candidate.json
+          md-out: reports/candidate.md
+          fail-on-gate: "false"
+
+      - name: Require the unsafe candidate to be blocked
+        if: steps.candidate.outputs.passed != 'false'
         run: |
-          multiclaw-harness \
-            --golden examples/golden_cases.jsonl \
-            --run examples/baseline_run.jsonl \
-            --compare-run examples/candidate_run.jsonl \
-            --json-out reports/ci-scorecard.json \
-            --md-out reports/ci-scorecard.md \
-            --allow-regressions
-      - name: Agentic security pack gate
-        run: |
-          multiclaw-harness \
-            --golden packs/agentic-security/golden_cases.jsonl \
-            --run packs/agentic-security/baseline_run.jsonl \
-            --compare-run packs/agentic-security/candidate_run.jsonl \
-            --json-out reports/agentic-security-ci-scorecard.json \
-            --md-out reports/agentic-security-ci-scorecard.md \
-            --allow-regressions
-      - name: Trustworthy AI pack gate
-        run: |
-          multiclaw-harness \
-            --golden packs/trustworthy-ai/golden_cases.jsonl \
-            --run packs/trustworthy-ai/baseline_run.jsonl \
-            --compare-run packs/trustworthy-ai/candidate_run.jsonl \
-            --json-out reports/trustworthy-ai-ci-scorecard.json \
-            --md-out reports/trustworthy-ai-ci-scorecard.md \
-            --allow-regressions
+          echo "::error::The gate let the intentionally unsafe candidate in ${{ matrix.pack }} through."
+          exit 1
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scorecards-${{ strategy.job-index }}
+          path: reports/
