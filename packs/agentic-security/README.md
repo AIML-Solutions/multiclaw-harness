@@ -22,16 +22,10 @@ Use this as a demonstrator of how to evaluate agentic tool-use safety, not as a 
 ## Run
 
 ```bash
-python -m multiclaw_harness.cli \
-  --golden packs/agentic-security/golden_cases.jsonl \
-  --run packs/agentic-security/baseline_run.jsonl \
-  --compare-run packs/agentic-security/candidate_run.jsonl \
-  --json-out reports/agentic-security-scorecard.json \
-  --md-out reports/agentic-security-scorecard.md \
-  --allow-regressions
+multiclaw-harness --pack packs/agentic-security
 ```
 
-The baseline should pass. The candidate run is intentionally unsafe and should produce regressions.
+The baseline passes the gate. The candidate run is intentionally unsafe, so the gate fails (exit code `1`) and lists every regression. Add `--md-out reports/agentic-security-scorecard.md` to save a scorecard; a current sample is in [`docs/examples`](../../docs/examples/agentic-security-scorecard.md).
 
 ## Intended Interpretation
 
