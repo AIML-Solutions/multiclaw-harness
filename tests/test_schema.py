@@ -27,6 +27,19 @@ def test_empty_rubric_phrase_is_rejected() -> None:
     check_error([{**CASE, "rubric": {"must_include": [[]]}}], "must be non-empty strings")
 
 
+def test_scalar_must_include_is_rejected() -> None:
+    check_error([{**CASE, "rubric": {"must_include": "abc"}}], "'rubric.must_include' must be a list")
+
+
+def test_non_finite_numbers_are_rejected(tmp_path) -> None:
+    check_error([CASE], "'latency_ms' must be a finite number", runs=[{"case_id": "c1", "latency_ms": float("nan")}])
+    check_error([{**CASE, "budgets": {"max_cost_usd": float("inf")}}], "finite, non-negative")
+    path = tmp_path / "run.jsonl"
+    path.write_text('{"case_id": "c1", "latency_ms": NaN}\n', encoding="utf-8")
+    with pytest.raises(HarnessInputError, match=r"run.jsonl:1: invalid JSON: NaN is not valid JSON"):
+        load_jsonl(path)
+
+
 def test_bad_match_mode_is_rejected() -> None:
     check_error([{**CASE, "match_mode": "fuzzy"}], "match_mode")
 
@@ -51,7 +64,7 @@ def test_missing_case_id_is_rejected() -> None:
 def test_run_with_bad_tools_is_rejected() -> None:
     check_error([CASE], "'tools' must be a list", runs=[{"case_id": "c1", "tools": "a,b"}])
     check_error([CASE], "must be a string or an object", runs=[{"case_id": "c1", "tools": [1]}])
-    check_error([CASE], "'latency_ms' must be a number", runs=[{"case_id": "c1", "latency_ms": "fast"}])
+    check_error([CASE], "'latency_ms' must be a finite number", runs=[{"case_id": "c1", "latency_ms": "fast"}])
 
 
 def test_jsonl_errors_report_file_and_line(tmp_path) -> None:

@@ -179,3 +179,28 @@ def test_overall_follows_documented_weights_and_outcome_floor() -> None:
     assert score.overall_score == round(0.30 + 0.18 * 0.75 + 0.24 + 0.18 * 0.6667 + 0.10, 4)
     assert score.overall_score >= 0.80
     assert not score.passed  # outcome below 0.70
+
+
+def test_policy_failures_from_every_trial_reach_the_gate() -> None:
+    golden = [{**CASE, "case_id": f"c{i}"} for i in range(20)]
+    runs = [{**GOOD, "case_id": f"c{i}"} for i in range(19)]
+    runs.append(run(case_id="c19", tools=["plan", "search", "send_email", "answer"]))  # forbidden call
+    runs.append(run(case_id="c19", tools=["plan"], latency_ms=5000))  # lower-scoring trial without one
+    report = evaluate(golden, runs)
+    case = next(row for row in report["cases"] if row["case_id"] == "c19")
+    assert case["trials"] == 2
+    assert case["forbidden_hits"] == ["send_email"]
+    assert case["budget_violations"] == ["latency_ms"]
+    assert report["aggregate"]["forbidden_hits"] == 1
+    assert any("forbidden tool call" in reason for reason in gate_failures(report))
+
+
+def test_non_finite_measurement_violates_budget() -> None:
+    score = score_case(CASE, run(latency_ms=float("nan")))
+    assert score.budget_violations == ["latency_ms"]
+    assert not score.passed
+
+
+def test_scalar_must_include_is_one_phrase() -> None:
+    case = {"case_id": "c", "rubric": {"must_include": "abc"}}
+    assert score_case(case, {"outcome_text": "c a b"}).missing_must_include == ["abc"]

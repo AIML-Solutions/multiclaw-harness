@@ -19,6 +19,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - **Exit codes:** a failed gate now exits `1` (previously `2`); `2` now means invalid input or usage.
 - A `must_not_include` phrase in the outcome now fails the case.
 - A budget whose measurement is missing from the run now counts as a violation.
+- `NaN` and `Infinity` are rejected in golden sets and runs, and `rubric.must_include` must be a list.
 - `--json-out` and `--md-out` are optional; the CLI always prints a summary with the gate verdict and its reasons.
 - The Markdown scorecard has been redesigned: gate verdict, baseline/candidate/delta table, per-case tables, findings, and regression reasons.
 - Packaging now uses hatchling with a single-sourced version; tests run from a fresh clone without installing the package.

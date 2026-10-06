@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import math
 import re
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import asdict, dataclass, field, replace
 from fnmatch import fnmatchcase
 from statistics import mean
@@ -168,6 +169,8 @@ def score_case(case: Mapping[str, Any], run: Mapping[str, Any]) -> CaseScore:
     reliability_score = 1.0 - (len(forbidden_hits) / len(observed)) if forbidden_hits else 1.0
 
     must_include = rubric.get("must_include", [])
+    if isinstance(must_include, str):
+        must_include = [must_include]
     must_not_include = [str(x) for x in rubric.get("must_not_include", [])]
     missing_must_include = []
     for item in must_include:
@@ -189,6 +192,9 @@ def score_case(case: Mapping[str, Any], run: Mapping[str, Any]) -> CaseScore:
         if value is None:
             budget_violations.append(measured)
             budget_details.append(f"{measured} not reported (limit {limit})")
+        elif not math.isfinite(float(value)):
+            budget_violations.append(measured)
+            budget_details.append(f"{measured} is not a finite number (limit {limit})")
         elif float(value) > float(limit):
             budget_violations.append(measured)
             budget_details.append(f"{measured} {value} > {limit}")
@@ -262,13 +268,32 @@ def _missing_run_score(case: Mapping[str, Any]) -> CaseScore:
     )
 
 
+def _unique(items: Iterable[str]) -> list[str]:
+    return list(dict.fromkeys(items))
+
+
 def score_trials(case: Mapping[str, Any], trials: list[Mapping[str, Any]]) -> CaseScore:
-    """Score repeated trials of one case. The case reports its worst trial and passes only if every trial passes."""
+    """Score repeated trials of one case.
+
+    Scores and tool diffs come from the worst trial; policy failures (forbidden calls, prohibited phrases, budget
+    violations) are collected from every trial so none is hidden behind a lower-scoring trial. The case passes only
+    if every trial passes.
+    """
     if not trials:
         return _missing_run_score(case)
     scores = [score_case(case, trial) for trial in trials]
     worst = min(scores, key=lambda s: (s.passed, s.overall_score))
-    return replace(worst, trials=len(scores), trials_passed=sum(s.passed for s in scores))
+    if len(scores) == 1:
+        return worst
+    return replace(
+        worst,
+        forbidden_hits=[hit for s in scores for hit in s.forbidden_hits],
+        present_must_not_include=_unique(x for s in scores for x in s.present_must_not_include),
+        budget_violations=_unique(x for s in scores for x in s.budget_violations),
+        budget_details=_unique(x for s in scores for x in s.budget_details),
+        trials=len(scores),
+        trials_passed=sum(s.passed for s in scores),
+    )
 
 
 def aggregate(scores: list[CaseScore]) -> dict[str, Any]:

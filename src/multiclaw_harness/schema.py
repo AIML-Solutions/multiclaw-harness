@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import difflib
 import json
+import math
 from collections.abc import Iterable, Mapping
 from fnmatch import fnmatchcase
 from pathlib import Path
@@ -65,13 +66,19 @@ def _read_jsonl(path: str | Path) -> Rows:
             if not line or line.startswith("#"):
                 continue
             try:
-                row = json.loads(line)
+                row = json.loads(line, parse_constant=_reject_constant)
             except json.JSONDecodeError as exc:
                 raise HarnessInputError(f"{path}:{n}: invalid JSON: {exc.msg}") from exc
+            except ValueError as exc:
+                raise HarnessInputError(f"{path}:{n}: invalid JSON: {exc}") from exc
             if not isinstance(row, dict):
                 raise HarnessInputError(f"{path}:{n}: each line must be a JSON object")
             rows.append((n, row))
     return rows
+
+
+def _reject_constant(name: str) -> Any:
+    raise ValueError(f"{name} is not valid JSON; use a finite number")
 
 
 def load_jsonl(path: str | Path) -> list[dict[str, Any]]:
@@ -100,6 +107,12 @@ def _str_list(value: Any, field: str, where: str) -> list[str]:
     if not isinstance(value, list) or not all(isinstance(x, str) for x in value):
         raise HarnessInputError(f"{where}: '{field}' must be a list of strings")
     return value
+
+
+def _finite_number(value: Any) -> bool:
+    if isinstance(value, bool):
+        return False
+    return isinstance(value, int) or (isinstance(value, float) and math.isfinite(value))
 
 
 def _phrase(value: Any) -> bool:
@@ -159,8 +172,8 @@ def validate_golden(label: str, rows: Rows) -> dict[str, dict[str, Any]]:
                     f"{where}: unknown budget '{key}'{_suggest(key, BUDGET_FIELDS)}; "
                     f"supported: {', '.join(BUDGET_FIELDS)}"
                 )
-            if isinstance(limit, bool) or not isinstance(limit, (int, float)) or limit < 0:
-                raise HarnessInputError(f"{where}: budget '{key}' must be a non-negative number")
+            if not _finite_number(limit) or limit < 0:
+                raise HarnessInputError(f"{where}: budget '{key}' must be a finite, non-negative number")
 
         rubric = row.get("rubric", {}) or {}
         if not isinstance(rubric, dict):
@@ -168,7 +181,10 @@ def validate_golden(label: str, rows: Rows) -> dict[str, dict[str, Any]]:
         for key in rubric:
             if key not in RUBRIC_KEYS:
                 raise HarnessInputError(f"{where}: unknown rubric field '{key}'{_suggest(key, RUBRIC_KEYS)}")
-        for item in rubric.get("must_include", []):
+        must_include = rubric.get("must_include", [])
+        if not isinstance(must_include, list):
+            raise HarnessInputError(f"{where}: 'rubric.must_include' must be a list")
+        for item in must_include:
             any_of = isinstance(item, list) and item and all(_phrase(x) for x in item)
             if not (_phrase(item) or any_of):
                 raise HarnessInputError(
@@ -210,8 +226,8 @@ def validate_runs(label: str, rows: Rows) -> dict[str, list[dict[str, Any]]]:
             names.append(name)
         for field in ("latency_ms", "estimated_cost_usd", "total_tokens"):
             value = row.get(field)
-            if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float))):
-                raise HarnessInputError(f"{where}: '{field}' must be a number")
+            if value is not None and not _finite_number(value):
+                raise HarnessInputError(f"{where}: '{field}' must be a finite number")
         outcome = row.get("outcome_text", "")
         if outcome is not None and not isinstance(outcome, str):
             raise HarnessInputError(f"{where}: 'outcome_text' must be a string")

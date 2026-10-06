@@ -53,7 +53,7 @@ Phrases match case-insensitively, collapse whitespace, and must start at a word 
 | `max_tokens` | `total_tokens` |
 | `max_tool_calls` | number of entries in `tools` |
 
-A budget whose measurement is missing from the run counts as violated, because a limit you can't verify isn't being enforced. **Any** violation fails the case.
+A budget whose measurement is missing or not a finite number counts as violated, because a limit you can't verify isn't being enforced. **Any** violation fails the case.
 
 ### Overall and pass/fail
 
@@ -68,7 +68,7 @@ A budget whose measurement is missing from the run counts as violated, because a
 
 ### Trials
 
-Agents are nondeterministic, so a run file may contain several rows with the same `case_id`. Each row is scored as a trial. The case reports its **worst** trial and passes only if **every** trial passes (pass^k). The aggregate adds `trials` and `trial_pass_rate`, the share of individual trials that passed.
+Agents are nondeterministic, so a run file may contain several rows with the same `case_id`. Each row is scored as a trial. The case reports the scores of its **worst** trial, collects policy failures (forbidden calls, prohibited phrases, budget violations) from **every** trial so none is hidden, and passes only if **every** trial passes (pass^k). The aggregate adds `trials` and `trial_pass_rate`, the share of individual trials that passed.
 
 ## Comparison
 

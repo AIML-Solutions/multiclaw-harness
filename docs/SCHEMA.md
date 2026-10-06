@@ -1,6 +1,6 @@
 # File Schema
 
-Golden sets and runs are [JSONL](https://jsonlines.org/) files: one JSON object per line. Blank lines and lines starting with `#` are ignored. Errors report the file and line, for example `golden_cases.jsonl:4: unknown field 'forbiden_tools' (did you mean 'forbidden_tools'?)`.
+Golden sets and runs are [JSONL](https://jsonlines.org/) files: one JSON object per line. Blank lines and lines starting with `#` are ignored. Numbers must be finite; `NaN` and `Infinity` are rejected. Errors report the file and line, for example `golden_cases.jsonl:4: unknown field 'forbiden_tools' (did you mean 'forbidden_tools'?)`.
 
 ## Golden case
 
